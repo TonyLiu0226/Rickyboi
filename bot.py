@@ -262,9 +262,9 @@ async def earrape(ctx):
             if i == 2:
                 source = FFmpegPCMAudio('SWED.mp3')
             if i == 3:
-                source = FFmpegPCMAudio('RFS.mp3')
+                source = FFmpegPCMAudio('TTT.mp3')
             if i == 4:
-                source = FFmpegPCMAudio('MHDS.mp3')
+                source = FFmpegPCMAudio('TS.mp3')
             if i == 5:
                 source = FFmpegPCMAudio('LYDS.mp3')
             if i == 6:
