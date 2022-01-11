@@ -1,3 +1,4 @@
+#IMPORTANT: LINES 124-179 IS THE ROCK PAPER SCISSORS COMMAND THAT WAS ADDED TO THE EXISTING BOT DURING LHD BUILD.
 import json
 from re import X
 from requests.sessions import extract_cookies_to_jar
@@ -19,10 +20,13 @@ import sys
 from collections import Counter
 import calendar
 from bs4 import BeautifulSoup
+import traceback
+from discord.ui import Button, View
 key = "your_key" 
 
 member_list = {}
 WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather?"
+FORECAST_URL = "http://api.openweathermap.org/data/2.5/forecast?"
 TRANSLINK_API = "your_api"
 TOKEN_ID = "use_your_own_bot_token" 
 
@@ -113,8 +117,68 @@ async def lottery(ctx):
         print(e)
         await ctx.send ("Failed, here's the reason why: " +e)
 
+#################################################################################################################################################################
+#       This command (below) was completed during day 2 of LHD: Build. All other commands were previously there before the hackathon, and not part of the challenge.
+#################################################################################################################################################################
 
+@bot.command(aliases=['rps'], help="Straightforward, just rock paper scissors. Keeps track of user wins")
+async def rockPaperScissors(ctx):
+    try:
+        
+        button1 = Button(emoji="⛰️", style=discord.ButtonStyle.grey)
+        button2 = Button(emoji="📰", style=discord.ButtonStyle.grey)
+        button3 = Button(emoji="✂️", style=discord.ButtonStyle.grey)
 
+        #rock is 1, paper is 2, and scissors is 3. Dependencies: 2 > 1, 3 > 2, 1 > 3
+        async def onClickListener1(interaction):
+            
+            player = 1
+            AI = random.randint(1, 3)
+                
+            if (AI == 2):
+                await interaction.response.edit_message(content=f"{ctx.author.mention} You Lost :cry:, I picked paper", view=None)
+            elif (AI == 3):
+                await interaction.response.edit_message(content=f"{ctx.author.mention} You Won :smile:, I picked scissors", view=None)
+            else:
+                await interaction.response.edit_message(content=f"{ctx.author.mention} The game is a tie cuz I also picked rock lol", view=None)
+
+        async def onClickListener2(interaction):
+            player = 2
+            AI = random.randint(1, 3)
+
+            if (AI == 3):
+                await interaction.response.edit_message(content=f"{ctx.author.mention} You Lost :cry:, I picked scissors", view=None)
+            elif (AI == 1):
+                await interaction.response.edit_message(content=f"{ctx.author.mention} You Won :smile:, I picked rock", view=None)
+            else:
+                await interaction.response.edit_message(content=f"{ctx.author.mention} The game is a tie cuz I also picked paper lol", view=None)
+        
+        async def onClickListener3(interaction):
+            player = 3
+            AI = random.randint(1, 3)
+
+            if (AI == 1):
+                await interaction.response.edit_message(content=f"{ctx.author.mention} You Lost :cry:, I picked rock", view=None)
+            elif (AI == 2):
+                await interaction.response.edit_message(content=f"{ctx.author.mention} You Won :smile:, I picked paper", view=None)
+            else:
+                await interaction.response.edit_message(content=f"{ctx.author.mention} The game is a tie cuz I also picked scissors lol", view=None)
+        
+        button1.callback = onClickListener1
+        button2.callback = onClickListener2
+        button3.callback = onClickListener3
+
+        view = View(timeout=15)
+        view.add_item(button1)
+        view.add_item(button2)
+        view.add_item(button3)
+        await ctx.send("Choose rock, paper or scissors", view=view)
+
+    except Exception as e:
+        traceback.print_exc()
+        
+        
+        
 @bot.command (aliases = ['n'])    
 async def announce(ctx):
     await ctx.send("Please enter a message for me to announce")
@@ -382,10 +446,39 @@ async def weather(ctx, *city):
         await ctx.send("{}".format(ctx.author.mention) +" NO CITY FOUND!")
 
 
-#this command is incomplete atm
+
 @bot.command(help="Gets the 5 day forecast for a specified city", aliases = ['forecast'])
 async def weatherForecast(ctx, *city):
-    await ctx.send("No forecast available!")
+    try:
+        c = " ".join(city)
+        URL = FORECAST_URL + "q=" + c + "&appid=" + key
+        response = requests.get(URL)
+        data = response.json()
+    
+        l = data['list']
+
+        weatherArr = [int((l[0]['main']['temp'])-273.15), int((l[7]['main']['temp'])-273.15), int((l[15]['main']['temp'])-273.15), 
+        int((l[23]['main']['temp'])-273.15), int((l[31]['main']['temp'])-273.15), int((l[39]['main']['temp'])-273.15)]
+
+        conditionArr = [l[0].get('weather')[0].get('description'), l[7].get('weather')[0].get('description'), l[15].get('weather')[0].get('description'), 
+        l[23].get('weather')[0].get('description'), l[31].get('weather')[0].get('description'), l[39].get('weather')[0].get('description')]
+        day = ["Today (3h from now)", "Tomorrow", "In 2 days", "In 3 days", "In 4 days", "In 5 days"]
+
+        e = discord.Embed(title= f"{c} Weather", color=0xFF5733)
+
+        e.add_field(name=f'**{day[0]}**', value=f'> Weather: {conditionArr[0]}\n> Temperature {weatherArr[0]} C',inline=False)
+        e.add_field(name=f'**{day[1]}**', value=f'> Weather: {conditionArr[1]}\n> Temperature {weatherArr[1]} C',inline=False)
+        e.add_field(name=f'**{day[2]}**', value=f'> Weather: {conditionArr[2]}\n> Temperature {weatherArr[2]} C',inline=False)
+        e.add_field(name=f'**{day[3]}**', value=f'> Weather: {conditionArr[3]}\n> Temperature {weatherArr[3]} C',inline=False)
+        e.add_field(name=f'**{day[4]}**', value=f'> Weather: {conditionArr[4]}\n> Temperature {weatherArr[4]} C',inline=False)
+        e.add_field(name=f'**{day[5]}**', value=f'> Weather: {conditionArr[5]}\n> Temperature {weatherArr[5]} C',inline=False)
+
+        await ctx.send(embed=e)
+
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
+        await ctx.send(f"{ctx.author.mention} You have entered an invalid city!")
         
 
 
