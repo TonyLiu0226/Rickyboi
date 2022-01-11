@@ -121,7 +121,7 @@ async def lottery(ctx):
 #       This command (below) was completed during day 2 of LHD: Build. All other commands were previously there before the hackathon, and not part of the challenge.
 #################################################################################################################################################################
 
-@bot.command(aliases=['rps'], help="Straightforward, just rock paper scissors. Keeps track of user wins")
+@bot.command(aliases=['rps'], help="Straightforward, just rock paper scissors.")
 async def rockPaperScissors(ctx):
     try:
         
